@@ -1,5 +1,16 @@
 # Jacklet
 
+The paused background-music experiment is preserved in
+[the music archive](docs/archive/music-experiment/README.md), including the
+composition, recording, draft controls, and findings. Background music is not
+part of the active app; existing game sound effects remain available.
+
+The results panel now reads personal statistics from Neon, including recent runs,
+best/average completed scores and participation streaks. Database-free development
+and previews explicitly use browser statistics; a database error never silently
+switches to local results. See [integration notes](docs/integration.md) for the
+host-app boundaries, schedule extension commands, and optional real-database test.
+
 Branding uses Jacklet with the subtitle “daily blackjack” and a spade favicon.
 Progress version `jacklet-v3` starts a new game for all browsers: old runs, statistics,
 sound preferences, and dismissed instructions are reset on the next load.
@@ -76,6 +87,11 @@ Skip installation if dependencies are already installed. `cards:fetch` downloads
 
 ## Validation
 
+The owner reports successful schedule generation, ratings generation, schedule
+coverage checks, tests, typechecking, and production build for the statistics and
+reliability update, and confirms the site is working. The optional separate-database
+integration test and live production recovery checks have not been confirmed.
+
 ```sh
 npm test
 npm run typecheck
@@ -111,7 +127,7 @@ version reset rejects all tokens signed before the new game.
 
 The original deck-curation catalog still describes no-joker play. Current ratings
 live separately in lib/blackjack/ratings.json and include every affordable joker
-choice, cumulative prices, persistent strikes, and negative final scores. All 90
+choice, cumulative prices, persistent strikes, and negative final scores. All 180
 dates were recalculated without changing any deck. Both APIs use those ratings;
 no rating search runs during gameplay.
 
@@ -130,7 +146,7 @@ no rating search runs during gameplay.
 
 ## Approved daily seeds
 
-`lib/blackjack/catalog.json` contains 90 preanalyzed daily decks from **September 9 through December 7, 2026**. It is imported only by server code. Each entry includes the deck, seed, rules version, reachable card scores, combined point scores, star thresholds, and an optional surviving-to-end action path. A null path means no such path was found under the original no-joker rules. Surviving to the end may leave fewer than four cards undealt. No runtime search is required. The joker update leaves this catalog unchanged.
+`lib/blackjack/catalog.json` contains 180 preanalyzed daily decks from **September 9, 2026 through March 7, 2027**. It is imported only by server code. Each entry includes the deck, seed, rules version, reachable card scores, combined point scores, star thresholds, and an optional surviving-to-end action path. A null path means no such path was found under the original no-joker rules. Surviving to the end may leave fewer than four cards undealt. No runtime search is required. The joker update leaves this catalog unchanged.
 
 The analyzer exhaustively explores legal decisions and memoizes equivalent states. Publication requires a best achievable card count of at least **26**, at least 12 distinct final card scores, and achievable card scores in all five star bands. A route to 52 is optional. The shared `isPublishable` function controls these curation defaults. This rejects decks whose best possible run is very short; it does not prevent players from losing early or guarantee they can infer optimal choices from visible cards. The 26-card cutoff is a provisional playtesting choice. Ordinary-strategy difficulty curation remains a roadmap item.
 
@@ -146,7 +162,7 @@ Negative results always earn one star.
 Stars measure attainable score range, not player percentiles. Each deck's best score
 always earns five stars. Run ratings:generate after appending dates; it preserves
 existing ratings and fails without saving if a new analysis exceeds its state limit.
-All 90 scheduled decks retain their order and rules, with new point ratings calculated
+All 180 scheduled decks have point ratings calculated
 offline. No future cards, attainable ranges, or thresholds are exposed in the UI or API.
 
 Before the schedule expires, append more approved days:
@@ -198,7 +214,22 @@ one started run; completing it should increment completed and populate recent re
 
 Visiting the game does not insert a run. The first deal records its start; subsequent actions update progress and the last action records completion. Stored fields include anonymous identity, puzzle date, generation, rules version, decisions, score, stars, cards revealed, hand counts, strikes, joker purchases, and server timestamps. No IP addresses, emails, hidden/future deck data, or practice results are stored. Start-to-completion time is elapsed time, including breaks, not measured active play time. An unfinished record is not proof of abandonment.
 
-`GET /api/stats` returns only the current cookie's started/completed counts, best and average completed score, and ten recent completed results. No player ID can be supplied in the URL. Negative scores are included; no completed results gives null best/average. This endpoint prepares the stats modal; the existing interface still uses local participation statistics. No third-party analytics has been added.
+`GET /api/stats` returns only the current cookie's started/completed counts, decks
+cleared, participation streak, best and average completed score, and ten recent
+completed results. No player ID can be supplied in the URL. Negative scores are
+included; no completed results gives null best/average. The statistics strip and
+results dialog use this endpoint, refreshing on daily load, first deal, and
+completion. Database-free development/previews return an explicit browser-storage
+mode; production configuration failures return an error. No third-party analytics
+has been added. Server diagnostics record operation/category and safe database
+error codes, not raw errors, tokens, connection strings, or player identities.
+
+GitHub Actions runs unit tests, typechecking and a production build on pushes and
+pull requests. A separate check verifies the next 30 days have decks and ratings,
+including on a weekly schedule. Enable Actions in the repository to use this.
+`npm run test:db` is an optional real-PostgreSQL check against a separate test
+database; setup and cleanup details are in docs/integration.md. It is not run by
+ordinary tests or CI.
 
 ### Prototype resets
 

@@ -1,10 +1,19 @@
 # Jacklet roadmap
 
+## Product direction
+
+Jacklet will host multiple card games; Daily Blackjack is the first. Each game
+defines its own rules, modes, progress and statistics. Challenges may be daily,
+weekly or use another schedule; free play against a computer may have no schedule.
+Share player identity, preferences, navigation and card assets where useful.
+Defer routing/schema changes and generalized game infrastructure until planning
+the second game or host-app integration. Prototype history remains disposable.
+
 ## Current game
 
 - Daily and practice now share three persistent strikes, −100 points per loss,
   and ratings calculated over all legal joker choices. Final sounds play automatically
-  for 1–2 versus 3–5 stars. The separate ratings file covers all 90 scheduled dates.
+  for 1–2 versus 3–5 stars. The separate ratings file covers all 180 scheduled dates.
 
 - One 52-card deck per Eastern calendar day; one run in the current browser.
 - Hit and stand; no betting. Dealer stands on soft 17; blackjack outranks other 21s.
@@ -18,9 +27,11 @@
 ## Next priorities
 
 - Playtest the provisional 26-card best-case cutoff. A long optimal path does not imply a long ordinary run with hidden information. Evaluate ordinary strategies and early unavoidable-loss branches to improve curation.
-- Add a compact stats modal using the existing private endpoint, then return focus to gameplay and retention experiments.
+- Validate the new database-backed results modal and real PostgreSQL integration test, then return focus to gameplay and retention experiments.
 - Tune star bands after observing play; current ratings already include jokers and three strikes.
-- Expand the approved schedule before December 8, 2026. The initial catalog ends December 7.
+- Extend the schedule before March 8, 2027. The current catalog ends March 7.
+- Run the new schedule check after generation; CI also checks 30-day coverage weekly.
+- Keep integration lightweight: reuse the host app's identity and navigation rather than adding standalone accounts. See docs/integration.md.
 
 ## Later
 

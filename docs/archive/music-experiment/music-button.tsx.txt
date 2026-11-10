@@ -1,0 +1,77 @@
+"use client";
+import { useEffect, useRef, useState } from "react";
+import { PROGRESS_VERSION } from "../lib/blackjack/progress";
+import "./music.css";
+
+// Enable after the exported audio is present and its loop boundary is verified.
+const MUSIC_READY = true;
+const KEY = `${PROGRESS_VERSION}:music`;
+
+export default function MusicButton() {
+  const [enabled, setEnabled] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const wanted = useRef(false);
+  const audio = useRef<HTMLAudioElement | null>(null);
+  const mounted = useRef(false);
+
+  async function start() {
+    if (!MUSIC_READY || !wanted.current || document.hidden || !mounted.current) return;
+    const track = audio.current ?? new Audio("/music/after-hours.wav");
+    audio.current = track;
+    track.loop = true;
+    track.volume = 0.25;
+    try {
+      await track.play();
+      if (!mounted.current || !wanted.current || document.hidden) track.pause();
+      else setFailed(false);
+    } catch (error) {
+      if (!mounted.current || !wanted.current) return;
+      // A remembered preference still needs a user gesture on some browsers.
+      if (error instanceof DOMException && ["NotAllowedError", "AbortError"].includes(error.name)) return;
+      wanted.current = false;
+      setEnabled(false);
+      setFailed(true);
+      try { localStorage.setItem(KEY, "off"); } catch {}
+    }
+  }
+
+  useEffect(() => {
+    if (!MUSIC_READY) return;
+    mounted.current = true;
+    try { wanted.current = localStorage.getItem(KEY) === "on"; } catch {}
+    setEnabled(wanted.current);
+    const gesture = () => { if (audio.current?.paused !== false) void start(); };
+    const visibility = () => { if (document.hidden) audio.current?.pause(); else void start(); };
+    document.addEventListener("pointerdown", gesture);
+    document.addEventListener("keydown", gesture);
+    document.addEventListener("visibilitychange", visibility);
+    return () => {
+      mounted.current = false;
+      document.removeEventListener("pointerdown", gesture);
+      document.removeEventListener("keydown", gesture);
+      document.removeEventListener("visibilitychange", visibility);
+      const track = audio.current;
+      audio.current = null;
+      if (track) { track.pause(); track.removeAttribute("src"); track.load(); }
+    };
+  }, []);
+
+  function toggle() {
+    wanted.current = !wanted.current;
+    setEnabled(wanted.current);
+    setFailed(false);
+    try { localStorage.setItem(KEY, wanted.current ? "on" : "off"); } catch {}
+    if (wanted.current) void start(); else audio.current?.pause();
+  }
+
+  if (!MUSIC_READY) return null;
+  return <span className="music-control">
+    <button className={`sound-button ${enabled ? "sound-on" : "sound-off"}`}
+      aria-label={enabled ? "Turn music off" : "Turn music on"} aria-pressed={enabled}
+      title={enabled ? "Music on" : "Music off"} onClick={toggle}>
+      <span aria-hidden="true">♫</span>
+    </button>
+    {failed && <span className="music-error" role="status">Music couldn’t load. Try again.</span>}
+    <a className="music-credit" href="/music/credits.html" title="Music credits" aria-label="Music credits">ⓘ</a>
+  </span>;
+}

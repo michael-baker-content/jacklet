@@ -4,6 +4,7 @@ import { practiceReplay } from "../../../lib/blackjack/practice.mjs";
 import { cookieTicket, dailyFor, entryFor, responseFor, verify } from "../../../lib/blackjack/server";
 import * as store from "../../../lib/blackjack/database";
 import { loadPersistent, playPersistent } from "../../../lib/blackjack/persistence";
+import { reportFailure } from "../../../lib/blackjack/diagnostics";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -16,7 +17,7 @@ export async function GET(request: Request) {
     if (useDatabase()) return await loadPersistent(request, new Date(), store);
     const now = new Date(), id = easternDay(now), ticket = cookieTicket(request, id);
     return responseFor(dailyFor(ticket?.moves ?? [], now));
-  } catch { return error("Today’s deck is unavailable. Please check back shortly.", 503); }
+  } catch (err) { reportFailure('daily.load', err); return error("Today’s deck is unavailable. Please check back shortly.", 503); }
 }
 export async function POST(request: Request) {
   try {
@@ -41,6 +42,7 @@ export async function POST(request: Request) {
     return responseFor(dailyFor([...latest.moves, body.action as Action], now));
   } catch (err) {
     if (err instanceof SyntaxError) return error("That action could not be read.", 400);
+    reportFailure('daily.action', err);
     return error("Couldn’t update your run. Refresh to recover the latest progress.", 503);
   }
 }

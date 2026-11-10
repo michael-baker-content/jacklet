@@ -12,7 +12,10 @@ type Ticket = { id: string; version: string; moves: Action[]; jokerPricing?: num
 export const COOKIE = "daily-blackjack-v1";
 export function entryFor(id: string): Entry {
   const entry = (catalog as Record<string, Entry>)[id];
-  if (!entry || !["blackjack-v1", RULES_VERSION].includes(entry.rulesVersion)) throw new Error("No approved deck scheduled for this date.");
+  if (!entry || !["blackjack-v1", RULES_VERSION].includes(entry.rulesVersion)) {
+    console.error('[jacklet]', { operation: 'schedule.lookup', date: id, category: 'missing-or-unsupported-deck' });
+    throw new Error("No approved deck scheduled for this date.");
+  }
   return entry;
 }
 function signature(payload: string) {

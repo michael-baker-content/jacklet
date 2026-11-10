@@ -1,5 +1,10 @@
 # Three-strike playtest — September 11, 2026
 
+Historical study: three strikes and calibrated joker-aware ratings have since
+shipped in both daily play and local practice. The tables below preserve the
+original experiment; references to proposed rules and uncalibrated practice
+describe that earlier state, not the current app. See README.md for current rules.
+
 This study compares all 90 scheduled decks (September 9–December 7) with the official
 single-loss rules and the proposed three-strike rules. No decks, daily rules,
 ratings, or saved-progress versions were changed.

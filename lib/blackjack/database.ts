@@ -3,6 +3,8 @@ import { PROGRESS_VERSION } from './progress';
 import { storageEnvironment } from './identity';
 import { isFinished, type Daily } from './client';
 import type { Action } from './engine.mjs';
+import { easternDay } from './dates';
+import { participationStreak, type PlayerStatistics } from './statistics';
 
 export function databaseEnabled() { return !!(process.env.DATABASE_URL_POOLED || process.env.DATABASE_URL); }
 function database() {
@@ -45,10 +47,11 @@ export async function saveRun(player: string, moves: Action[], daily: Daily): Pr
   return rows.length === 1;
 }
 
-export async function playerStatistics(player: string) {
+export async function playerStatistics(player: string): Promise<PlayerStatistics> {
   const sql = database();
   const rows = await sql`SELECT count(*)::int AS started,
     count(completed_at)::int AS completed,
+    count(*) FILTER (WHERE phase = 'cleared')::int AS cleared,
     max(score) FILTER (WHERE completed_at IS NOT NULL) AS best,
     round(avg(score) FILTER (WHERE completed_at IS NOT NULL), 1)::float8 AS average
     FROM jacklet_runs WHERE environment = ${storageEnvironment()}
@@ -58,5 +61,16 @@ export async function playerStatistics(player: string) {
     FROM jacklet_runs WHERE environment = ${storageEnvironment()}
       AND generation = ${PROGRESS_VERSION} AND player_id = ${player}::uuid
       AND completed_at IS NOT NULL ORDER BY puzzle_date DESC LIMIT 10`;
-  return { ...rows[0], recent };
+  const dates = await sql`SELECT puzzle_date::text AS date FROM jacklet_runs
+    WHERE environment = ${storageEnvironment()} AND generation = ${PROGRESS_VERSION}
+      AND player_id = ${player}::uuid ORDER BY puzzle_date DESC`;
+  return {
+    started: Number(rows[0].started), completed: Number(rows[0].completed),
+    cleared: Number(rows[0].cleared),
+    best: rows[0].best === null ? null : Number(rows[0].best),
+    average: rows[0].average === null ? null : Number(rows[0].average),
+    streak: participationStreak(dates.map(row => String(row.date)), easternDay()),
+    recent: recent.map(row => ({ date: String(row.date), score: Number(row.score),
+      stars: Number(row.stars), handsPlayed: Number(row.handsPlayed), handsWon: Number(row.handsWon) }))
+  };
 }

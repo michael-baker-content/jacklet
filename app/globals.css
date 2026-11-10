@@ -178,6 +178,10 @@ html,body{min-width:320px}
   .card-rotator{transition:none}
   .card-entering .card-shell,.hand-clearing{animation:none}
 }
+.recent-results{width:100%;border-collapse:collapse;font-size:14px}
+.recent-results caption{text-align:left;margin-bottom:12px}
+.recent-results th,.recent-results td{padding:8px 4px;text-align:right;border-bottom:1px solid var(--muted)}
+.recent-results th:first-child{text-align:left}
 .rules-heading{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .rules-heading h2{margin:0;font-size:29px}
 .rules-heading .help-button{flex-shrink:0;width:36px;height:36px}

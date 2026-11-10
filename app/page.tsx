@@ -1,9 +1,10 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import AnimatedScore from "./animated-score";
+import PlayerStats from "./player-stats";
 import CardTable from "./card-table";
 import { cardName, jokerPrice, RANKS, type Action } from "../lib/blackjack/engine.mjs";
-import { HELP_KEY, STORAGE_KEY, SOUND_KEY, isFinished, readHistory, shareText, detailedShareText, statistics, type Daily, type History } from "../lib/blackjack/client";
+import { HELP_KEY, STORAGE_KEY, SOUND_KEY, isFinished, readHistory, shareText, detailedShareText, type Daily, type History } from "../lib/blackjack/client";
 import { playSound, unlockSound, stopSound } from "./sound";
 
 const SUITS = ["♣", "♦", "♥", "♠"];
@@ -119,7 +120,6 @@ export default function Home() {
   const run = daily?.run, done = !!run && isFinished(run);
   const dateParts = daily?.id.split("-");
   const month = dateParts ? ["Jan.", "Feb.", "Mar.", "Apr.", "May", "Jun.", "Jul.", "Aug.", "Sep.", "Oct.", "Nov.", "Dec."][Number(dateParts[1]) - 1] : "";
-  const stats = statistics(history, daily?.id ?? "2000-01-01");
   const countdown = [Math.floor(seconds/3600),Math.floor(seconds/60)%60,seconds%60].map(n=>String(n).padStart(2,"0")).join(":");
   async function copy(detailed = false) {
     if (!run || !done) return;
@@ -155,7 +155,7 @@ export default function Home() {
       {done && !cardsAnimating && run && <section className="result" aria-label="Daily result">
         <div className="result-scoring">
         <div className="score-treasure" aria-hidden="true">
-          {["🪙", "💎", "💰", "🏆"].slice(0, Math.min(4, 2 + Math.floor(run.score / 100))).map((emoji, index) => <span key={index}>{emoji}</span>)}
+          {["🪙", "💎", "💰", "🏆"].slice(0, Math.max(0, Math.min(4, 2 + Math.floor(run.score / 100)))).map((emoji, index) => <span key={index}>{emoji}</span>)}
         </div>
         <h2>{run.score} points</h2>
         <p className="run-summary">{run.round} hands played, {run.handsWon} won</p>
@@ -170,7 +170,7 @@ export default function Home() {
       </section>}
       {run && run.revealed.length>0 && <details className="seen-cards"><summary>Revealed cards ({run.cardsTurned})</summary><div className="card-history">{run.revealed.map(c=><span key={c} className={[1,2].includes(Math.floor(c/13)) ? "red-card" : ""} aria-label={cardName(c)}>{RANKS[c%13]}{SUITS[Math.floor(c/13)]}</span>)}</div></details>}
       <p className="notice" role="status">{notice}</p>
-      <section className="stats" aria-label="Your statistics"><div><strong>{stats.played}</strong><span>Played</span></div><div><strong>{stats.cleared}</strong><span>Decks cleared</span></div><div><strong>{stats.streak}<small> days</small></strong><span>Play streak</span></div></section>
+      {daily && <PlayerStats history={history} date={daily.id} revision={done ? run!.revision : run?.revision ? 1 : 0} />}
       {warning && <p className="error" role="status">{warning}</p>}
       <footer className="footer"><p>Next deck in <strong>{daily ? countdown : "—"}</strong></p></footer>
     </div>
