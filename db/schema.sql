@@ -1,4 +1,28 @@
 -- Player IDs are anonymous. No email, IP address, or future deck is stored here.
+CREATE TABLE IF NOT EXISTS jacklet_draw_sessions (
+  environment text NOT NULL,
+  generation text NOT NULL,
+  player_id uuid NOT NULL,
+  puzzle_date date NOT NULL,
+  moves jsonb NOT NULL CHECK (jsonb_typeof(moves) = 'array'),
+  revision integer NOT NULL CHECK (revision BETWEEN 1 AND 32),
+  started_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  completed_at timestamptz,
+  PRIMARY KEY (environment, generation, player_id, puzzle_date),
+  CHECK (jsonb_array_length(moves) = revision)
+);
+
+CREATE TABLE IF NOT EXISTS jacklet_draw_runs (
+  environment text NOT NULL,
+  generation text NOT NULL,
+  player_id uuid NOT NULL,
+  puzzle_date date NOT NULL,
+  discards jsonb NOT NULL CHECK (jsonb_typeof(discards) = 'array' AND jsonb_array_length(discards) <= 5),
+  completed_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (environment, generation, player_id, puzzle_date)
+);
+
 CREATE TABLE IF NOT EXISTS jacklet_runs (
   environment text NOT NULL,
   generation text NOT NULL,

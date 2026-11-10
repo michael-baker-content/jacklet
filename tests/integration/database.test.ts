@@ -44,8 +44,28 @@ test('PostgreSQL commits one competing action, recovers lost responses, and lock
     assert.equal(stats.best, daily.run.score);
     assert.equal(stats.recent[0].score, daily.run.score);
     assert.equal((await store.playerStatistics(randomUUID())).started, 0);
+    const { saveDraw, loadDraw } = await import('../../lib/draw/database');
+    const { replay: replayDraw } = await import('../../lib/draw/engine');
+    const { deckFor } = await import('../../lib/draw/server');
+    const moves: import('../../lib/draw/engine').Move[] = [{type:'deal'}];
+    const attempts = await Promise.all([saveDraw(player, initial.id, moves, false), saveDraw(player, initial.id, moves, false)]);
+    assert.deepEqual(attempts.sort(), [false, true]);
+    const savedDraw = await loadDraw(player, initial.id);
+    assert.deepEqual(savedDraw, moves);
+    assert.equal(await saveDraw(player, initial.id, moves, false), false);
+    assert.deepEqual(await loadDraw(player, initial.id), savedDraw);
+    assert.deepEqual(await loadDraw(randomUUID(), initial.id), []);
+    const deck = deckFor(initial.id);
+    while (replayDraw(deck,moves).phase !== 'finished') {
+      moves.push(replayDraw(deck,moves).phase === 'selecting' ? {type:'draw',discards:[]} : {type:'deal'});
+      assert.equal(await saveDraw(player,initial.id,moves,replayDraw(deck,moves).phase === 'finished'),true);
+    }
+    assert.deepEqual(await loadDraw(player,initial.id),moves);
+    assert.equal(await saveDraw(player,initial.id,[...moves,{type:'deal'}],false),false);
+    assert.equal((await store.playerStatistics(player)).completed, 1);
   } finally {
     // Delete only this invocation's isolated synthetic player record.
     await sql`DELETE FROM jacklet_runs WHERE environment = ${process.env.VERCEL_ENV} AND player_id = ${player}::uuid`;
+    await sql`DELETE FROM jacklet_draw_sessions WHERE environment = ${process.env.VERCEL_ENV} AND player_id = ${player}::uuid`;
   }
 });

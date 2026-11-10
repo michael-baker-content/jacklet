@@ -1,0 +1,27 @@
+.draw-game .title-row{margin:20px 0;align-items:center}
+.draw-game h1{font-size:30px}
+.draw-game time{font-size:13px;color:var(--muted)}
+.draw-back{color:var(--gold);font-size:14px}
+.draw-hand{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:24px 0}
+.draw-choice{min-width:0;padding:0;background:transparent;border:0;color:var(--ink);border-radius:6px}
+.draw-choice:disabled{opacity:1}
+.draw-card{display:block;position:relative;aspect-ratio:72/101;background:var(--white);color:#172d25;border-radius:5px;overflow:hidden;box-shadow:0 3px 8px #0004}
+.draw-card.red-card{color:#b5473a}
+.draw-card>span{position:absolute;top:4px;left:4px;font-weight:bold;text-align:left}
+.draw-card img{position:absolute;inset:0;width:100%;height:100%;object-fit:fill}
+.draw-choice.is-held .draw-card{outline:2px solid var(--gold);outline-offset:2px}
+.draw-choice-label{display:block;font-size:12px;padding:12px 0 4px}
+.draw-choice.is-held .draw-choice-label{color:var(--gold)}
+.draw-submit{width:100%}
+.draw-joker{margin-top:12px}
+.draw-hand-title{font-family:var(--font-label),Arial,sans-serif;font-size:16px;font-weight:500;margin:20px 0 0}
+.draw-hand-title small{color:var(--muted)}
+.draw-game .draw-choice-label{min-height:32px;overflow-wrap:anywhere}
+.draw-game .score{display:flex;align-items:baseline;gap:4px}
+.draw-game .score small{font-size:13px}
+.draw-result{text-align:center}
+.draw-result h2{font-family:var(--font-display),Georgia,serif;color:var(--gold);font-size:30px}
+.draw-rankings{margin:24px 0;color:var(--muted);font-size:14px;line-height:1.7}
+.draw-game .table>p{font-size:14px;line-height:1.5}
+@media(max-width:380px){.draw-hand{gap:6px}.draw-game .table{padding:16px 12px}.draw-choice-label{font-size:11px}}
+@media(prefers-reduced-motion:no-preference){.draw-card{animation:draw-arrive .3s ease-out}.draw-choice{transition:transform .16s ease}.draw-choice:hover:not(:disabled){transform:translateY(-4px)}@keyframes draw-arrive{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}}

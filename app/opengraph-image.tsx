@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "Jacklet — Daily Blackjack. One daily deck. How far can you go?";
+export const alt = "Jacklet — Daily Blackjack and Daily Draw";
 export const size = { width:1200, height:630 };
 export const contentType = "image/png";
 
@@ -14,8 +14,8 @@ export default function PreviewImage() {
           </svg>
           <span style={{fontSize:108,fontWeight:700,letterSpacing:-5}}>Jacklet</span>
         </div>
-        <div style={{display:"flex",fontSize:28,letterSpacing:7,color:"#dfbd76",marginTop:12}}>DAILY BLACKJACK</div>
-        <div style={{display:"flex",fontSize:40,marginTop:54}}>One daily deck. How far can you go?</div>
+        <div style={{display:"flex",fontSize:28,letterSpacing:7,color:"#dfbd76",marginTop:12}}>THE CARD ROOM</div>
+        <div style={{display:"flex",fontSize:40,marginTop:54}}>Daily Blackjack · Daily Draw</div>
       </div>
     </div>,
     size

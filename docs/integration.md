@@ -1,8 +1,9 @@
 # Keeping Jacklet portable
 
-Jacklet is still a disposable prototype. This work adds no account system,
-analytics vendor, new database tables, or music runtime. Existing generation resets
-remain available; no new migration or history preservation requirement is imposed.
+Jacklet separates deterministic rules, persistence, identity, and presentation.
+These boundaries support adapting the game to a host application without replacing
+its rules engine. Project-specific status and reset policy are recorded in
+[maintainer notes](maintainer-notes.md).
 
 ## Boundaries for a host application
 
@@ -15,6 +16,18 @@ remain available; no new migration or history preservation requirement is impose
 - `statistics.ts` defines the personal-result contract and participation streak.
   `database.ts` supplies the data. `app/player-stats.tsx` renders it independently
   of the card table. The host can replace this component or the API route.
+- Daily Draw lives in `lib/draw` and `/games/draw`, with its own API and
+  `jacklet_draw_sessions` table. It shares the existing anonymous identity. Run
+  `npm run db:setup` on existing databases to add the table before deployment.
+  This additive setup preserves Blackjack progress. Draw results do not enter
+  Blackjack's statistics or score bands.
+- Daily Draw generates decks privately from the date and `PUZZLE_SECRET`. Its
+  secret must remain stable across instances and deployments. Its completion
+  records store signed/replayed action histories, not the shuffled deck. Secret rotation
+  changes replayed hands and must accompany an intentional reset strategy.
+- The three-strike Draw generation is `jacklet-v3:draw-v2`. Previous single-hand
+  rows remain in the unused `jacklet_draw_runs` table. No global identity or
+  Blackjack reset is needed. Apply the additive schema before deploying.
 - Environment and generation separate prototype records. A fresh generation is
   acceptable when integrating. There is no need to migrate anonymous histories yet.
 - Public assets and the current API paths are root-relative. A future subpath embed
@@ -23,10 +36,7 @@ remain available; no new migration or history preservation requirement is impose
 
 ## Validation before the next deployment
 
-The owner has completed the 90-day extension and reported successful ratings,
-schedule checks, tests, typechecking, build, and a working site. The catalog now
-covers 180 dates through March 7, 2027. The optional database test below remains
-unconfirmed. For a future extension, append days and compute their ratings:
+To extend the schedule, append days and compute their ratings:
 
 ```sh
 npm run seeds:generate -- 90
@@ -55,8 +65,7 @@ excluded from ordinary `npm test` and CI; neither has database credentials.
 
 Also manually check mobile results, keyboard/modal interaction, preview fallback,
 refresh after clearing localStorage while keeping the identity cookie, and recovery
-after a database outage. No database integration test or production check was run
-as part of this source change.
+after a database outage.
 
 ## Lightweight playtesting
 

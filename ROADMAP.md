@@ -2,14 +2,25 @@
 
 ## Product direction
 
-Jacklet will host multiple card games; Daily Blackjack is the first. Each game
+Jacklet hosts Daily Blackjack and Daily Draw. Each game
 defines its own rules, modes, progress and statistics. Challenges may be daily,
 weekly or use another schedule; free play against a computer may have no schedule.
 Share player identity, preferences, navigation and card assets where useful.
-Defer routing/schema changes and generalized game infrastructure until planning
-the second game or host-app integration. Prototype history remains disposable.
+The home page selects a game; each has a dedicated route and independent results.
+Defer generalized game infrastructure until another mode needs it.
+Prototype history remains disposable.
 
-## Current game
+## Daily Draw
+
+- Five-card draw against a fixed-strategy computer at `/games/draw`; one draw per hand.
+- Shared daily deck, three persistent strikes, +100 per win, −100 per loss, +1 per revealed ordinary card.
+- Player-only wild jokers replace chosen cards, costing 50 more each purchase across the run.
+- Ten cards required for another round; insufficient replacements retain original cards and settle normally.
+- Separate Neon action histories and revision checks; shared anonymous identity and sound preference.
+- Mobile card selection, rules, hand rankings, saved completion and spoiler-free sharing.
+- Add historical Draw statistics only when useful; Blackjack statistics remain separate.
+
+## Daily Blackjack
 
 - Daily and practice now share three persistent strikes, −100 points per loss,
   and ratings calculated over all legal joker choices. Final sounds play automatically
